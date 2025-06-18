@@ -38,8 +38,7 @@ return [
 
     'magento' => [
         'base_url' => env('MAGENTO_BASE_URL'),
-        'admin_user' => env('MAGENTO_ADMIN_USER'),
-        'admin_password' => env('MAGENTO_ADMIN_PASSWORD'),
+        'access_token' => env('MAGENTO_ACCESS_TOKEN'),
     ],
 
     'crawler' => [
