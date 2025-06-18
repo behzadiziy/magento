@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+
+    'magento' => [
+        'base_url' => env('MAGENTO_BASE_URL'),
+        'admin_user' => env('MAGENTO_ADMIN_USER'),
+        'admin_password' => env('MAGENTO_ADMIN_PASSWORD'),
+    ],
+
+    'crawler' => [
+        'api_key' => env('CRAWLER_API_KEY'),
+    ],
+
 ];
