@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V1\ProductIngestionController;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->post('/v1/products/ingest', [ProductIngestionController::class, 'store']);
+Route::middleware('auth.apikey')->post('/v1/products/ingest', [ProductIngestionController::class, 'store']);
 
 
 Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
