@@ -61,8 +61,8 @@ Follow these steps to get the project up and running on your local development m
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/magento-bridge-api.git
-cd magento-bridge-api
+git clone https://github.com/behzadiziy/magento.git
+cd magento
 ```
 
 ### 3. Install Dependencies
@@ -80,25 +80,13 @@ cp .env.example .env
 Now, open `.env` and configure the following variables:
 
 ```dotenv
-# Application & Database
-APP_NAME="Magento Bridge API"
-APP_URL=http://localhost:8000
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=magento_bridge_api
-DB_USERNAME=root
-DB_PASSWORD=
-
-# --- Service Credentials ---
 
 # API Key for the Python Web Crawler
 CRAWLER_API_KEY=YourSecureRandomCrawlerKey
 
 # Magento 2 Instance Details
 MAGENTO_BASE_URL=https://your-magento-instance.com
-MAGENTO_ADMIN_USER=your_magento_api_user
-MAGENTO_ADMIN_PASSWORD=your_magento_api_password
+MAGENTO_ACCESS_TOKEN=your_magento_access_token
 
 # Sanctum configuration (for the operator's SPA front-end)
 SANCTUM_STATEFUL_DOMAINS=localhost:3000
