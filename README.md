@@ -1,4 +1,4 @@
-# Magento Bridge API v1.0
+# Magento v1.0
 
 ![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20.svg)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg)
