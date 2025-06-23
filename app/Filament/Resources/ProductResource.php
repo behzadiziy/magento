@@ -2,21 +2,23 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\ProductStatus;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\ProductStatus;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\SelectColumn;
 
 class ProductResource extends Resource
 {
@@ -31,6 +33,7 @@ class ProductResource extends Resource
                 Section::make('')
                     ->columns(2)
                     ->schema([
+
                         TextInput::make('sku')
                             ->label('SKU')
                             ->required()
@@ -44,6 +47,7 @@ class ProductResource extends Resource
                             ->required()
                             ->numeric()
                             ->prefix('$'),
+
                         TextInput::make('stock_quantity')
                             ->required()
                             ->numeric()
@@ -51,7 +55,8 @@ class ProductResource extends Resource
 
                         Select::make('status')
                             ->required()
-                            ->options(ProductStatus::class),
+                            ->options(ProductStatus::class)
+                            ->default(ProductStatus::PendingReview),
 
                         Textarea::make('description')
                             ->columnSpanFull(),
@@ -63,27 +68,28 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('sku')
+                TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('price')
+                TextColumn::make('price')
                     ->money()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stock_quantity')
+                    
+                TextColumn::make('stock_quantity')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('magento_product_id')
-                    ->numeric()
+
+                SelectColumn::make('status')
+                    ->options(ProductStatus::class)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
