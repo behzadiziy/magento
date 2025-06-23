@@ -17,7 +17,7 @@ class ProductIngestionService
     public function ingestProducts(array $productsData): int
     {
         $ingestedCount = 0;
-        $batchSize = 50;
+        $batchSize = 500;
 
         DB::beginTransaction();
 
