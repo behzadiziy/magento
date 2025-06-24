@@ -17,15 +17,18 @@ class Product extends Model
         'price',
         'stock_quantity',
         'status',
-        'sync_error_message',
-        'crawler_payload',
-        'magento_product_id',
+        'attributes',
+        'category',
+        'images',
+        'source_url',
+        'brand'
     ];
 
     protected $casts = [
-        'crawler_payload' => 'array',
+        'attributes' => 'array',
+        'images' => 'array',
         'status' => ProductStatus::class,
-        'price' => 'decimal:2',
         'stock_quantity' => 'integer',
+        'price' => 'integer',
     ];
 }
