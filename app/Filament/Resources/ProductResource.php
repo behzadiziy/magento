@@ -8,17 +8,19 @@ use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\ProductStatus;
+use App\Services\MagentoService;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
-use Filament\Tables\Columns\SelectColumn;
 
 class ProductResource extends Resource
 {
@@ -76,14 +78,38 @@ class ProductResource extends Resource
                 TextColumn::make('price')
                     ->money()
                     ->sortable(),
-                    
+
                 TextColumn::make('stock_quantity')
                     ->numeric()
                     ->sortable(),
 
                 SelectColumn::make('status')
                     ->options(ProductStatus::class)
-                    ->sortable(),
+                    ->sortable()
+                    ->afterStateUpdated(function (Product $record, $state) {
+                        if ($state === ProductStatus::Synced->value) {
+                            try {
+                                // 1. Resolve the service from the container
+                                $magentoService = app(MagentoService::class);
+
+                                // 2. Call the service method with the model instance
+                                $magentoService->createOrUpdateProduct($record);
+
+                                // 3. Send a success notification (Good UX!)
+                                Notification::make()
+                                    ->title("Product '{$record->name}' synced successfully")
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+
+                                Notification::make()
+                                    ->title('Sync Failed')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }
+                    }),
 
                 TextColumn::make('created_at')
                     ->dateTime()
