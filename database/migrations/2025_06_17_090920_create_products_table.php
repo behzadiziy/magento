@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedInteger('price')->default(0);
-            $table->integer('stock_quantity')->default(0);
+            $table->unsignedInteger('stock_quantity')->default(0);
             $table->string('status')->default(ProductStatus::PendingReview->value)->index();
             $table->json('images')->nullable();
             $table->json('attributes')->nullable();
