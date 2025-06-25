@@ -10,12 +10,15 @@ use Filament\Tables\Table;
 use App\Enums\ProductStatus;
 use App\Services\MagentoService;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
@@ -32,35 +35,86 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('')
+                Grid::make(3)->schema([
+
+                    Section::make('Product Details')
+                        ->columnSpan(2)
+                        ->schema([
+                            Grid::make(2)->schema([
+                                TextInput::make('name')
+                                    ->label('Product Name')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('sku')
+                                    ->label('SKU')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('brand')
+                                    ->label('Brand')
+                                    ->maxLength(255),
+
+                                TextInput::make('category')
+                                    ->label('Category')
+                                    ->maxLength(255),
+                            ]),
+
+                            Textarea::make('description')
+                                ->rows(6),
+                        ]),
+
+                    Section::make('Status & Pricing')
+                        ->columnSpan(1)
+                        ->schema([
+                            Select::make('status')
+                                ->required()
+                                ->options(ProductStatus::class)
+                                ->default(ProductStatus::PendingReview),
+
+                            TextInput::make('price')
+                                ->required()
+                                ->numeric(),
+
+                            TextInput::make('stock_quantity')
+                                ->label('Stock Quantity')
+                                ->numeric()
+                                ->default(0),
+
+                            TextInput::make('source_url')
+                                ->label('Source URL')
+                                ->url()
+                                ->maxLength(2048)
+                                ->columnSpanFull(),
+                        ]),
+                ]),
+
+                Section::make('Product Images')
+                    ->collapsible()
+                    ->schema([
+                        FileUpload::make('images')
+                            ->label('Gallery Images')
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->disk('public')
+                            ->directory('products')
+                            ->image()
+                            ->imageEditor()
+                            ->helperText('Add or reorder the product gallery images.')
+                    ]),
+
+
+                Section::make('Advanced & Crawler Data')
+                    ->collapsible()
                     ->columns(2)
                     ->schema([
 
-                        TextInput::make('sku')
-                            ->label('SKU')
-                            ->required()
-                            ->maxLength(255),
-
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-
-                        TextInput::make('price')
-                            ->required()
-                            ->numeric()
-                            ->prefix('$'),
-
-                        TextInput::make('stock_quantity')
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-
-                        Select::make('status')
-                            ->required()
-                            ->options(ProductStatus::class)
-                            ->default(ProductStatus::PendingReview),
-
-                        Textarea::make('description')
+                        KeyValue::make('attributes')
+                            ->label('Product Attributes')
+                            ->keyLabel('Attribute Name')
+                            ->valueLabel('Attribute Value')
+                            ->reorderable()
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -125,6 +179,7 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
