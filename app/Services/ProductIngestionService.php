@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Enums\ProductStatus;
+use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,6 +28,22 @@ class ProductIngestionService
                 $productsToInsert = [];
 
                 foreach ($chunk as $productData) {
+
+                    if (isset($productData['attributes']) && is_array($productData['attributes'])) {
+                        foreach (array_keys($productData['attributes']) as $label) {
+                            $trimmedLabel = trim($label);
+                            if (!empty($trimmedLabel)) {
+
+                                AttributeMapping::firstOrCreate(
+                                    ['source_label' => $trimmedLabel],
+                                    ['is_mapped' => false]
+                                );
+                            }
+                        }
+                    }
+
+
+
                     // Handle image processing
                     if (isset($productData['images']) && is_array($productData['images'])) {
                         $imagePaths = [];
