@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Support\Str;
 use App\Enums\ProductStatus;
 use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\DB;
@@ -102,13 +103,18 @@ class ProductIngestionService
             // Get the image content from the URL
             $imageContent = file_get_contents($imageUrl);  // Using file_get_contents to get image content
             if (!$imageContent) {
-                return null; // If the image is not accessible, return null
+                return null;
             }
 
             // Get the image file extension from the URL
             $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
-            $imageName = "{$sku}-" . uniqid() . ".{$extension}";  // Generate unique image name
-            $imagePath = "products/{$imageName}";  // Save in the 'products' directory
+
+
+            $safeSku = Str::slug(Str::ascii($sku));
+            $uniqueId = uniqid();
+
+            $imageName = "{$safeSku}-{$uniqueId}.{$extension}";
+            $imagePath = "products/{$imageName}";
 
             // Store the image in the public storage
             Storage::disk('public')->put($imagePath, $imageContent);
