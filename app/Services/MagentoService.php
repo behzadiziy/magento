@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\AttributeMapping;
-use App\Models\Product;
 use Exception;
-use Illuminate\Support\Facades\Http;
+use App\Models\Product;
+use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use App\Jobs\SyncMagentoProductImage;
 use Illuminate\Support\Facades\Storage;
 
 final class MagentoService
@@ -32,7 +33,7 @@ final class MagentoService
     {
         $sku = rawurlencode($product->sku);
         $productExists = $this->productExists($sku);
-        $attributeSetId = 4; // Your default attribute set ID
+        $attributeSetId = 4;
 
         $payload = [
             'product' => [
@@ -50,7 +51,7 @@ final class MagentoService
                     ],
                 ],
                 'custom_attributes' => $this->handleCustomAttributes($product, $attributeSetId),
-                //'media_gallery_entries' => $this->handleMediaGallery($product),
+                'media_gallery_entries' => [],
             ],
         ];
 
@@ -61,7 +62,28 @@ final class MagentoService
             $payload['saveOptions'] = true;
         }
 
-        return $this->makeApiRequest($method, $endpoint, $payload);
+
+
+        // Dispatch image sync jobs to the queue (fast and asynchronous)
+        foreach ($product->images as $index => $relativeImagePath) {
+            SyncMagentoProductImage::dispatch(
+                $product->sku,
+                $relativeImagePath,
+                $product->name,
+                $index,
+            );
+        }
+
+        $response = $this->makeApiRequest($method, $endpoint, $payload);
+
+        if ($response['status'] !== 'success') {
+            Log::error("Product creation failed for SKU: {$sku}. Response: " . json_encode($response));
+            return $response;
+        }
+
+        Log::info("Product created or updated successfully for SKU: {$sku}");
+
+        return $response;
     }
 
     // In app/Services/MagentoService.php
@@ -126,42 +148,64 @@ final class MagentoService
         }
     }
 
-    private function handleMediaGallery(Product $product): array
+    public function uploadImageForProduct(string $sku, string $imageContent, string $productName, int $imageIndex, string $relativeImagePath): void
     {
-        $mediaEntries = [];
-        if (empty($product->images)) {
-            return [];
+        $encodedSku = rawurlencode($sku);
+        $mediaEndpoint = "/rest/V1/products/{$encodedSku}/media";
+
+        // Build absolute path to the image
+        $absolutePath = storage_path('app/public/' . ltrim($relativeImagePath, '/'));
+
+
+        if (!file_exists($absolutePath)) {
+            Log::error("File not found for SKU {$sku}, image #{$imageIndex}. Path: {$absolutePath}");
+            Log::info("Skipping image upload for SKU {$sku}, image #{$imageIndex} due to missing file.");
+            return;
         }
 
-        foreach ($product->images as $index => $relativeImagePath) {
-            try {
-                // Convert the relative storage path to a full, public URL
-                $fullImageUrl = Storage::url($relativeImagePath);
 
-                $imageContent = @file_get_contents($fullImageUrl);
-                if ($imageContent) {
-                    $mediaEntries[] = [
-                        'media_type' => 'image',
-                        'label' => $product->name . ' - Image ' . ($index + 1),
-                        'position' => $index + 1,
-                        'disabled' => false,
-                        'types' => ($index === 0) ? ['image', 'small_image', 'thumbnail'] : [],
-                        'content' => [
-                            'base64_encoded_data' => base64_encode($imageContent),
-                            'type' => 'image/jpeg',
-                            'name' => "{$product->sku}-{$index}.jpg",
-                        ],
-                    ];
-                } else {
-                    Log::warning("file_get_contents failed to download image for product {$product->sku} from URL: {$fullImageUrl}");
-                }
-            } catch (Exception $e) {
-                Log::warning("Could not process image for product {$product->sku}: {$relativeImagePath}. Error: " . $e->getMessage());
-                continue;
-            }
+        // Extract extension, MIME type, and raw content
+        $extension = pathinfo($absolutePath, PATHINFO_EXTENSION) ?: 'jpg';
+        $mimeType = mime_content_type($absolutePath);
+        $rawImageContent = file_get_contents($absolutePath);
+
+        // Sanitize image filename
+        $imageName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', "{$sku}-{$imageIndex}.{$extension}");
+
+        Log::info("Uploading image for SKU: {$sku}, Image Index: {$imageIndex}", [
+            'image_name' => $imageName,
+            'image_path' => $absolutePath,
+        ]);
+
+        // Prepare media payload
+        $mediaPayload = [
+            'entry' => [
+                'media_type' => 'image',
+                'label'      => $productName . ' - Image ' . ($imageIndex + 1),
+                'position'   => $imageIndex + 1,
+                'disabled'   => false,
+                'types'      => ($imageIndex === 0) ? ['image', 'small_image', 'thumbnail'] : [],
+                'content'    => [
+                    'base64_encoded_data' => base64_encode($rawImageContent),
+                    'type'                => $mimeType,
+                    'name'                => $imageName,
+                ],
+            ]
+        ];
+
+        Log::info("Image Payload Prepared", ['payload' => $mediaPayload]);
+
+        try {
+            $response = $this->makeApiRequest('post', $mediaEndpoint, $mediaPayload);
+
+            Log::info('Magento response for image upload:', ['response' => $response->json()]);
+            Log::info("Successfully uploaded image for SKU {$sku}, image #{$imageIndex}.");
+        } catch (\Exception $e) {
+            Log::error("Failed to upload image for SKU {$sku}, image #{$imageIndex}. Error: " . $e->getMessage());
         }
-        return $mediaEntries;
     }
+
+
 
     private function makeApiRequest(string $method, string $endpoint, array $payload = [], bool $ignoreNotFound = false): mixed
     {
@@ -191,5 +235,18 @@ final class MagentoService
         }
 
         return $response->json();
+    }
+
+    public function getProductBySku(string $sku)
+    {
+        try {
+            $encodedSku = rawurlencode($sku);
+            $response = $this->makeApiRequest('get', "/rest/V1/products/{$encodedSku}");
+            return $response ? $response : null;
+        } catch (Exception $e) {
+            // Log the exception and return null
+            Log::error("Failed to fetch product by SKU {$sku}. Error: {$e->getMessage()}");
+            return null;
+        }
     }
 }
