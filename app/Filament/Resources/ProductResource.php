@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use Filament\Forms\Components\RichEditor;
 
 class ProductResource extends Resource
 {
@@ -60,8 +61,11 @@ class ProductResource extends Resource
                                     ->maxLength(255),
                             ]),
 
-                            Textarea::make('description')
-                                ->rows(6),
+                            RichEditor::make('description')
+                                ->label('Product Description')
+                                ->required()
+                                ->maxLength(5000)
+                                ->columnSpanFull(),
                         ]),
 
                     Section::make('Status & Pricing')
