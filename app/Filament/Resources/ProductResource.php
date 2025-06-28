@@ -8,6 +8,7 @@ use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\ProductStatus;
+use Filament\Actions\Action;
 use App\Services\MagentoService;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Grid;
@@ -19,12 +20,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
-use Filament\Forms\Components\RichEditor;
 
 class ProductResource extends Resource
 {
@@ -131,8 +132,11 @@ class ProductResource extends Resource
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable(),
+
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->words(5),
+
                 TextColumn::make('price')
                     ->money()
                     ->sortable(),
@@ -141,33 +145,17 @@ class ProductResource extends Resource
                     ->numeric()
                     ->sortable(),
 
-                SelectColumn::make('status')
-                    ->options(ProductStatus::class)
-                    ->sortable()
-                    ->afterStateUpdated(function (Product $record, $state) {
-                        if ($state === ProductStatus::Synced->value) {
-                            try {
-                                // 1. Resolve the service from the container
-                                $magentoService = app(MagentoService::class);
-
-                                // 2. Call the service method with the model instance
-                                $magentoService->createOrUpdateProduct($record);
-
-                                // 3. Send a success notification (Good UX!)
-                                Notification::make()
-                                    ->title("Product '{$record->name}' synced successfully")
-                                    ->success()
-                                    ->send();
-                            } catch (\Exception $e) {
-
-                                Notification::make()
-                                    ->title('Sync Failed')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
-                        }
-                    }),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn(ProductStatus $state): string => match ($state) {
+                        ProductStatus::PendingReview => 'warning',
+                        ProductStatus::Approved => 'gray',
+                        ProductStatus::Rejected => 'danger',
+                        ProductStatus::Synced => 'success',
+                        ProductStatus::SyncFailed => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -191,6 +179,40 @@ class ProductResource extends Resource
                 ]),
             ]);
     }
+
+    public static function getMagentoSyncAction(): Action
+    {
+        return Action::make('syncToMagento')
+            ->label('Sync to Magento')
+            ->icon('heroicon-o-arrow-path')
+            ->color('success') // Make it stand out
+            ->requiresConfirmation() // Good practice to prevent accidental clicks
+            ->modalHeading('Sync Product to Magento')
+            ->modalDescription('Are you sure you want to sync this product now? This will create or update the product in Magento.')
+            ->action(function (Product $record) {
+                // The core logic of the action
+                try {
+                    // Use the service container to resolve your MagentoService
+                    $magentoService = app(MagentoService::class);
+                    $magentoService->createOrUpdateProduct($record);
+
+                    // Send a success notification
+                    Notification::make()
+                        ->title('Sync Successful')
+                        ->body('The product has been successfully synced to Magento.')
+                        ->success()
+                        ->send();
+                } catch (\Exception $e) {
+                    // Send a failure notification
+                    Notification::make()
+                        ->title('Sync Failed')
+                        ->body($e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
 
     public static function getRelations(): array
     {
