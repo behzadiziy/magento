@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Product;
 use Illuminate\Support\Str;
 use App\Enums\ProductStatus;
+use App\Models\CategoryMapping;
 use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -41,6 +42,16 @@ class ProductIngestionService
                                 );
                             }
                         }
+                    }
+
+
+                    if (!empty($productData['category'])) {
+                        $trimmedCategory = trim($productData['category']);
+                        // Queue the category for mapping if it's new
+                        CategoryMapping::firstOrCreate(
+                            ['source_name' => $trimmedCategory],
+                            ['is_mapped' => false]
+                        );
                     }
 
 

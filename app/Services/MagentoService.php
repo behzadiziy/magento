@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Product;
+use App\Models\CategoryMapping;
 use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -35,6 +36,17 @@ final class MagentoService
         $productExists = $this->productExists($sku);
         $attributeSetId = 4;
 
+
+        $magentoCategoryId = null;
+        if (!empty($product->category)) {
+            $mapping = CategoryMapping::where('source_name', trim($product->category))->first();
+            if ($mapping && $mapping->is_mapped) {
+                $magentoCategoryId = $mapping->magento_category_id;
+            } else {
+                Log::info("Skipping category for SKU '{$product->sku}'. Category '{$product->category}' is pending mapping.");
+            }
+        }
+
         $payload = [
             'product' => [
                 'sku' => $product->sku,
@@ -49,6 +61,7 @@ final class MagentoService
                         'qty' => $product->stock_quantity,
                         'is_in_stock' => $product->stock_quantity > 0,
                     ],
+                    'category_links' => $magentoCategoryId ? [['position' => 0, 'category_id' => (string)$magentoCategoryId]] : [],
                 ],
                 'custom_attributes' => $this->handleCustomAttributes($product, $attributeSetId),
                 'media_gallery_entries' => [],
