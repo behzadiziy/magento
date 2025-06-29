@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreProductIngestionRequest;
 use App\Services\ProductIngestionService;
+use App\Jobs\ProcessProductIngestion;
 
 class ProductIngestionController extends Controller
 {
@@ -21,10 +22,12 @@ class ProductIngestionController extends Controller
             $productsData = $request->validated()['products'];
 
             // Delegate the product ingestion to the service
-            $ingestedCount = $this->productIngestionService->ingestProducts($productsData);
+            //$ingestedCount = $this->productIngestionService->ingestProducts($productsData);
+
+            ProcessProductIngestion::dispatch($productsData)->onQueue('product-ingestion');
 
             return response()->json([
-                'message' => "Successfully ingested {$ingestedCount} products for review."
+                'message' => "Successfully ingested products."
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

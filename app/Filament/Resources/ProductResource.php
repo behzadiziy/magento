@@ -39,66 +39,76 @@ class ProductResource extends Resource
             ->schema([
                 Grid::make(3)->schema([
 
-                    Section::make('Product Details')
+                    Section::make(__('Product Details'))
                         ->columnSpan(2)
                         ->schema([
                             Grid::make(2)->schema([
                                 TextInput::make('name')
                                     ->label('Product Name')
+                                    ->translateLabel()
                                     ->required()
                                     ->maxLength(255),
 
                                 TextInput::make('sku')
                                     ->label('SKU')
+                                    ->translateLabel()
                                     ->required()
                                     ->maxLength(255),
 
                                 TextInput::make('brand')
                                     ->label('Brand')
+                                    ->translateLabel()
                                     ->maxLength(255),
 
                                 TextInput::make('category')
                                     ->label('Category')
+                                    ->translateLabel()
                                     ->maxLength(255),
                             ]),
 
                             RichEditor::make('description')
                                 ->label('Product Description')
+                                ->translateLabel()
                                 ->required()
                                 ->maxLength(5000)
                                 ->columnSpanFull(),
                         ]),
 
-                    Section::make('Status & Pricing')
+                    Section::make(__('Status & Pricing'))
                         ->columnSpan(1)
                         ->schema([
                             Select::make('status')
                                 ->required()
+                                ->translateLabel()
                                 ->options(ProductStatus::class)
                                 ->default(ProductStatus::PendingReview),
 
                             TextInput::make('price')
                                 ->required()
+                                ->translateLabel()
                                 ->numeric(),
 
                             TextInput::make('stock_quantity')
                                 ->label('Stock Quantity')
+                                ->translateLabel()
                                 ->numeric()
                                 ->default(0),
 
                             TextInput::make('source_url')
                                 ->label('Source URL')
+                                ->translateLabel()
                                 ->url()
                                 ->maxLength(2048)
                                 ->columnSpanFull(),
                         ]),
                 ]),
 
-                Section::make('Product Images')
+                Section::make(__('Product Images'))
                     ->collapsible()
                     ->schema([
                         FileUpload::make('images')
                             ->label('Gallery Images')
+                            ->translateLabel()
                             ->multiple()
                             ->reorderable()
                             ->appendFiles()
@@ -116,6 +126,7 @@ class ProductResource extends Resource
                     ->schema([
 
                         KeyValue::make('attributes')
+                            ->translateLabel()
                             ->label('Product Attributes')
                             ->keyLabel('Attribute Name')
                             ->valueLabel('Attribute Value')
@@ -195,6 +206,12 @@ class ProductResource extends Resource
                     // Use the service container to resolve your MagentoService
                     $magentoService = app(MagentoService::class);
                     $magentoService->createOrUpdateProduct($record);
+
+                    $record->update([
+                        'status' => ProductStatus::Synced,
+                        'sync_error_message' => null,
+                    ]);
+
 
                     // Send a success notification
                     Notification::make()
