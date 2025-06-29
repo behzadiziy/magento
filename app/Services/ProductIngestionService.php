@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use App\Models\Product;
+<<<<<<< HEAD
+use App\Enums\ProductStatus;
+use Illuminate\Support\Facades\DB;
+=======
 use Illuminate\Support\Str;
 use App\Enums\ProductStatus;
 use App\Models\CategoryMapping;
 use App\Models\AttributeMapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 
 class ProductIngestionService
 {
@@ -30,6 +35,15 @@ class ProductIngestionService
                 $productsToInsert = [];
 
                 foreach ($chunk as $productData) {
+<<<<<<< HEAD
+                    $productsToInsert[] = [
+                        'sku' => $productData['sku'],
+                        'name' => $productData['name'],
+                        'price' => $productData['price'],
+                        'description' => $productData['description'] ?? null,
+                        'status' => ProductStatus::PendingReview,
+                        'crawler_payload' => json_encode($productData),
+=======
 
                     if (isset($productData['attributes']) && is_array($productData['attributes'])) {
                         foreach (array_keys($productData['attributes']) as $label) {
@@ -83,6 +97,7 @@ class ProductIngestionService
                         'stock_quantity'   => $productData['stock_quantity'] ?? 0,
                         'source_url'       => $productData['source_url'] ?? null,
                         'attributes'       => json_encode($productData['attributes']) ?? null
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
                     ];
                 }
 
@@ -100,6 +115,8 @@ class ProductIngestionService
 
         return $ingestedCount;
     }
+<<<<<<< HEAD
+=======
 
     /**
      * Download the product image and store it in the public storage.
@@ -137,4 +154,5 @@ class ProductIngestionService
             return null;  // Return null if image download fails
         }
     }
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 }
