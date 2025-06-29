@@ -1,7 +1,10 @@
 <?php
 // routes/api.php
 
+<<<<<<< HEAD
 use App\Http\Controllers\Api\V1\StoresController;
+=======
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\MagentoSyncController;
@@ -22,7 +25,10 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
     //Route::post('magento/sync', [MagentoSyncController::class, 'sync']);
 
     Route::post('products/{product}/sync', MagentoSyncController::class);
+<<<<<<< HEAD
     Route::post('stores', [StoresController::class, 'create']);
     Route::post('stores/sync', [MagentoSyncController::class, 'sync']);
+=======
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 
 });

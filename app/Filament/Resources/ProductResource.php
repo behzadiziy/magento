@@ -10,17 +10,32 @@ use Filament\Tables\Table;
 use App\Enums\ProductStatus;
 use App\Services\MagentoService;
 use Filament\Resources\Resource;
+<<<<<<< HEAD
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+=======
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\KeyValue;
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+<<<<<<< HEAD
+=======
+use Filament\Forms\Components\FileUpload;
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
+<<<<<<< HEAD
+=======
+use Filament\Forms\Components\RichEditor;
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
 
 class ProductResource extends Resource
 {
@@ -32,6 +47,7 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
+<<<<<<< HEAD
                 Section::make('')
                     ->columns(2)
                     ->schema([
@@ -61,6 +77,91 @@ class ProductResource extends Resource
                             ->default(ProductStatus::PendingReview),
 
                         Textarea::make('description')
+=======
+                Grid::make(3)->schema([
+
+                    Section::make('Product Details')
+                        ->columnSpan(2)
+                        ->schema([
+                            Grid::make(2)->schema([
+                                TextInput::make('name')
+                                    ->label('Product Name')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('sku')
+                                    ->label('SKU')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('brand')
+                                    ->label('Brand')
+                                    ->maxLength(255),
+
+                                TextInput::make('category')
+                                    ->label('Category')
+                                    ->maxLength(255),
+                            ]),
+
+                            RichEditor::make('description')
+                                ->label('Product Description')
+                                ->required()
+                                ->maxLength(5000)
+                                ->columnSpanFull(),
+                        ]),
+
+                    Section::make('Status & Pricing')
+                        ->columnSpan(1)
+                        ->schema([
+                            Select::make('status')
+                                ->required()
+                                ->options(ProductStatus::class)
+                                ->default(ProductStatus::PendingReview),
+
+                            TextInput::make('price')
+                                ->required()
+                                ->numeric(),
+
+                            TextInput::make('stock_quantity')
+                                ->label('Stock Quantity')
+                                ->numeric()
+                                ->default(0),
+
+                            TextInput::make('source_url')
+                                ->label('Source URL')
+                                ->url()
+                                ->maxLength(2048)
+                                ->columnSpanFull(),
+                        ]),
+                ]),
+
+                Section::make('Product Images')
+                    ->collapsible()
+                    ->schema([
+                        FileUpload::make('images')
+                            ->label('Gallery Images')
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->disk('public')
+                            ->directory('products')
+                            ->image()
+                            ->imageEditor()
+                            ->helperText('Add or reorder the product gallery images.')
+                    ]),
+
+
+                Section::make('Advanced & Crawler Data')
+                    ->collapsible()
+                    ->columns(2)
+                    ->schema([
+
+                        KeyValue::make('attributes')
+                            ->label('Product Attributes')
+                            ->keyLabel('Attribute Name')
+                            ->valueLabel('Attribute Value')
+                            ->reorderable()
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -125,6 +226,10 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+<<<<<<< HEAD
+=======
+                Tables\Actions\DeleteAction::make(),
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

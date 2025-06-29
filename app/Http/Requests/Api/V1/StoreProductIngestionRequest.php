@@ -27,6 +27,18 @@ class StoreProductIngestionRequest extends FormRequest
             'products.*.name'        => ['required', 'string', 'max:255'],
             'products.*.price'       => ['required', 'numeric', 'min:0'],
             'products.*.description' => ['nullable', 'string'],
+<<<<<<< HEAD
+=======
+            'products.*.status'      => ['nullable', 'string', 'in:PendingReview,Active,Inactive'],
+            'products.*.images'      => ['nullable', 'array'],
+            'products.*.attributes'  => ['nullable', 'array'],
+            'products.*.images.*'    => ['nullable', 'url'],
+            'products.*.category'    => ['nullable', 'string', 'max:255'],
+            'products.*.brand'       => ['nullable', 'string', 'max:255'],
+            'products.*.stock_quantity' => ['nullable', 'integer', 'min:0'],
+            'products.*.source_url'  => ['nullable', 'string', 'url'],
+            'products.*.crawler_payload' => ['nullable', 'array'],
+>>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
         ];
     }
 }
