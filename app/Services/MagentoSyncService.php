@@ -209,4 +209,17 @@ class MagentoSyncService
         }
     }
 
+    public function getWebsites()
+    {
+        $token = $this->getAccessToken();
+        $getWebsitesResponse = $this->client->get("{$this->apiUrl}/rest/V1/store/websites", [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+
+        return json_decode($getWebsitesResponse->getBody(), true);
+    }
+
 }

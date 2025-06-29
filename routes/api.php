@@ -1,6 +1,7 @@
 <?php
 // routes/api.php
 
+use App\Http\Controllers\Api\V1\MagentoCustomerController;
 use App\Http\Controllers\Api\V1\StoresController;
 
 use Illuminate\Http\Request;
@@ -25,7 +26,8 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
     Route::post('products/{product}/sync', MagentoSyncController::class);
 
     Route::post('stores', [StoresController::class, 'create']);
-    Route::post('stores/sync', [MagentoSyncController::class, 'sync']);
+ //   Route::post('stores/sync', [MagentoSyncController::class, 'sync']);
+    Route::get('/magento/customers', [MagentoCustomerController::class, 'getCustomers']);
 
 
 });
