@@ -21,12 +21,8 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price' => $this->price,
             'status' => $this->status,
-<<<<<<< HEAD
-            'magentoProductId' => $this->magento_product_id,
-=======
             'attributes' => $this->attributes,
             'images' => $this->images,
->>>>>>> 7b98e8e6aebf847768cf0a55b85e4b069b4aced1
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
         ];
