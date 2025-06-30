@@ -20,12 +20,14 @@ class MagentoCategoryController extends Controller
     {
         $this->client = new Client();
         $this->apiUrl = config('magento.api_url');
-        $this->username = config('magento.username');
-        $this->password = config('magento.password');
+        $this->username = config('magento.api_username');
+        $this->password = config('magento.api_password');
+
     }
 
     public function getAccessToken()
     {
+
         if ($this->token) {
             return $this->token;
         }
@@ -75,14 +77,26 @@ class MagentoCategoryController extends Controller
                 'isActive' => $request->input('is_active', true),
                 'parentId' => $rootCategoryId,
                 'include_in_menu' => $request->input('include_in_menu', true),
-                'description' => $request->input('description', ''),
                 'url_key' => $request->input('url_key', \Str::slug($request->name)),
                 'position' => $request->input('position', 0),
                 'meta_title' => $request->input('meta_title', $request->name),
-                'meta_keywords' => $request->input('meta_keywords', ''),
-                'meta_description' => $request->input('meta_description', ''),
                 'display_mode' => $request->input('display_mode', 'PRODUCTS_AND_PAGE'),
                 'is_anchor' => $request->input('is_anchor', 1),
+
+                'custom_attributes' => [
+                    [
+                        'attribute_code' => 'description',
+                        'value' => $request->input('description', ''),
+                    ],
+                    [
+                        'attribute_code' => 'meta_keywords',
+                        'value' => $request->input('meta_keywords', ''),
+                    ],
+                    [
+                        'attribute_code' => 'meta_description',
+                        'value' => $request->input('meta_description', ''),
+                    ]
+                ]
             ]
         ];
 
@@ -142,7 +156,7 @@ class MagentoCategoryController extends Controller
         if (!$groupId) return null;
 
 
-        $group = $storeGroups->firstWhere('id', $groupId);
+        $group = collect($storeGroups)->firstWhere('id', $groupId);
 
         return $group['root_category_id'] ?? null;
     }
