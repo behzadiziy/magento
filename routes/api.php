@@ -1,9 +1,10 @@
 <?php
 // routes/api.php
 
-use App\Http\Controllers\Api\V1\MagentoCustomerController;
+use App\Http\Controllers\Api\V1\Tenant\MagentoCustomerController;
 use App\Http\Controllers\Api\V1\StoresController;
 
+use App\Http\Controllers\Api\V1\Tenant\MagentoCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\MagentoSyncController;
