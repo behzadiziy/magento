@@ -99,7 +99,7 @@ class MagentoSyncService
             throw $e;
         }
 
-     //   $uniqueSuffix = time() . '_' . rand(10, 20);
+        //   $uniqueSuffix = time() . '_' . rand(10, 20);
         $uniqueCode = strtolower(
                 preg_replace('/[^a-z0-9_]/', '_', $name)
             ) . '_' . uniqid();
@@ -209,17 +209,41 @@ class MagentoSyncService
         }
     }
 
-    public function getWebsites()
+    public function getStoreGroups()
     {
         $token = $this->getAccessToken();
-        $getWebsitesResponse = $this->client->get("{$this->apiUrl}/rest/V1/store/websites", [
+        $response = $this->client->get("{$this->apiUrl}/rest/V1/store/storeGroups", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
             ],
         ]);
 
-        return json_decode($getWebsitesResponse->getBody(), true);
+        return json_decode($response->getBody(), true);
     }
+
+
+    public function getCustomersByWebsiteId($websiteId)
+    {
+        $token = $this->getAccessToken();
+
+        $url = "{$this->apiUrl}/rest/V1/customers/search?" . http_build_query([
+                'searchCriteria[filter_groups][0][filters][0][field]' => 'website_id',
+                'searchCriteria[filter_groups][0][filters][0][value]' => $websiteId,
+                'searchCriteria[filter_groups][0][filters][0][condition_type]' => 'eq',
+                'searchCriteria[pageSize]' => 100,
+                'searchCriteria[currentPage]' => 1,
+            ]);
+
+        $response = $this->client->get($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+
 
 }

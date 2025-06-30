@@ -29,5 +29,11 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
  //   Route::post('stores/sync', [MagentoSyncController::class, 'sync']);
     Route::get('/magento/customers', [MagentoCustomerController::class, 'getCustomers']);
 
+    Route::prefix('categories')->group(function () {
+        Route::get('{id}', [MagentoCategoryController::class, 'getCategory']);
+        Route::post('/', [MagentoCategoryController::class, 'createCategory']);
+        Route::put('{id}', [MagentoCategoryController::class, 'updateCategory']);
+    });
+
 
 });
