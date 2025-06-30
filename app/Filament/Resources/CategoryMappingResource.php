@@ -15,7 +15,28 @@ class CategoryMappingResource extends Resource
     protected static ?string $model = CategoryMapping::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?int $navigationSort = 3; // Position it below Attribute Mappings
+    protected static ?int $navigationSort = 3;
+
+    /**
+     * Get the number to display in the navigation badge.
+     *
+     * @return string|null
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('is_mapped', false)->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    /**
+     * Get the color of the navigation badge.
+     *
+     * @return string|null
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('is_mapped', false)->count() > 0 ? 'danger' : null;
+    }
 
     public static function form(Form $form): Form
     {

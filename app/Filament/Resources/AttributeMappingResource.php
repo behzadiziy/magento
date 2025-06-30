@@ -2,40 +2,65 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AttributeMappingResource\Pages;
-use App\Models\AttributeMapping;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\AttributeMapping;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\AttributeMappingResource\Pages;
 
 class AttributeMappingResource extends Resource
 {
     protected static ?string $model = AttributeMapping::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
-    protected static ?int $navigationSort = 2; // Adjust to position it in your sidebar
+    protected static ?int $navigationSort = 2;
+
+    /**
+     * Get the number to display in the navigation badge.
+     *
+     * @return string|null
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('is_mapped', false)->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    /**
+     * Get the color of the navigation badge.
+     *
+     * @return string|null
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('is_mapped', false)->count() > 0 ? 'danger' : null;
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('source_label')
+                TextInput::make('source_label')
                     ->label('Source Label (From Crawler)')
                     ->required()
-                    ->disabled() // Admin cannot change the source
+                    ->disabled()
                     ->maxLength(255)
                     ->columnSpanFull(),
 
-                Forms\Components\TextInput::make('magento_attribute_code')
+                TextInput::make('magento_attribute_code')
                     ->label('Magento Attribute Code')
                     ->helperText('Enter the exact attribute_code you created in Magento.')
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\Select::make('magento_attribute_type')
+                Select::make('magento_attribute_type')
                     ->label('Magento Attribute Type')
                     ->options([
                         'select' => 'Select (Dropdown with options)',
@@ -50,18 +75,18 @@ class AttributeMappingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('source_label')
+                TextColumn::make('source_label')
                     ->label('Source Label')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('magento_attribute_code')
+                TextColumn::make('magento_attribute_code')
                     ->label('Magento Code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('magento_attribute_type')
+                TextColumn::make('magento_attribute_type')
                     ->badge(),
-                Tables\Columns\IconColumn::make('is_mapped')
+                IconColumn::make('is_mapped')
                     ->label('Is Mapped?')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

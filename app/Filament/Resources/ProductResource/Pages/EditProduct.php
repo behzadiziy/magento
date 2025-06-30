@@ -14,6 +14,8 @@ class EditProduct extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+
+            ProductResource::getMagentoSyncAction(),
         ];
     }
 }
