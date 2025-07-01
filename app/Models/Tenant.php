@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Tenant extends Model
+class Tenant extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $table = 'tenant';
 
@@ -15,8 +18,14 @@ class Tenant extends Model
         'name',
         'email',
         'phone',
+        'password',
         'address',
         'status',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
 

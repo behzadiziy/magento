@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SyncStoreDataToMagento;
 use App\Models\Stores;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StoresController extends Controller
 {
@@ -42,7 +43,7 @@ class StoresController extends Controller
 
         $data->name = $validated['name'];
         $data->code= $this->generateCode($data->name);
-        $data->owner_id = $validated['owner_id'];
+        $data->owner_id = $validated['owner_id'] = Auth::id();
         $data->domain_name = $validated['domain_name'];
         $data->store_category = $validated['store_category'];
         $data->registration_date = $validated['registration_date'];

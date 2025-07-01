@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class TenantController extends Controller
@@ -17,18 +18,32 @@ class TenantController extends Controller
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'status' => ['nullable', Rule::in(['active', 'pending', 'suspended'])],
+            'password' => 'required|string|min:8',
         ]);
 
-        $tenant = new Tenant();
+        $password_hashed=Hash::make($validated['password']);
 
-        $tenant->name= $validated['name'];
-        $tenant->email= $validated['email'];
-        $tenant->address= $validated['address'];
-        $tenant->phone= $validated['phone'];
+        $tenant = Tenant::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'password' => $password_hashed,
 
-        $tenant->save();
+        ]);
+        $email= $validated['email'];
+        $password= $validated['password'];
+
+
+
+        $token = $tenant->createToken('TenantToken')->plainTextToken;
+
+        // Return response
         return response()->json([
-            'message' => 'Tenant created successfully',
+            'message' => 'Tenant registered successfully',
+            'token' => $token,
+            'email' => $email ,
+            'password' => $password ,
             'tenant' => $tenant
         ], 201);
 

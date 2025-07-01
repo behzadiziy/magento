@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Tenant\MagentoCustomerController;
 use App\Http\Controllers\Api\V1\StoresController;
 
 use App\Http\Controllers\Api\V1\Tenant\MagentoCategoryController;
+use App\Http\Controllers\Api\V1\Tenant\TenantAuthController;
 use App\Http\Controllers\Api\V1\Tenant\TenantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,3 +41,5 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
 
 });
 Route::apiResource('tenant',TenantController::class);
+Route::post('tenant/login', [TenantAuthController::class, 'login']);
+
