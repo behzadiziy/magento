@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class MagentoSyncService
 {
-    protected  $client;
-    protected  $apiUrl;
-    protected  $username;
-    protected  $password;
-    protected  $token = null;
+    public  $client;
+    public  $apiUrl;
+    public  $username;
+    public  $password;
+    public  $token = null;
+
 
     public function __construct()
     {
@@ -22,8 +23,7 @@ class MagentoSyncService
         $this->password = config('magento.password');
     }
 
-    // Get or reuse access token
-    protected function getAccessToken()
+    public function getAccessToken()
     {
         if ($this->token) {
             return $this->token;

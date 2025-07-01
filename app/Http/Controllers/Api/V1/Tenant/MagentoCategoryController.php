@@ -10,21 +10,15 @@ use App\Http\Controllers\Controller;
 
 class MagentoCategoryController extends Controller
 {
-    protected  $client;
-    protected  $apiUrl;
-    protected  $username;
-    protected  $password;
-    protected  $token = null;
+    protected $client;
+    protected $syncService;
 
-    public function __construct()
+    public function __construct(MagentoSyncService $syncService)
     {
         $this->client = new Client();
-        $this->apiUrl = config('magento.api_url');
-        $this->username = config('magento.api_username');
-        $this->password = config('magento.api_password');
+        $this->syncService = $syncService;
 
     }
-
     public function getAccessToken()
     {
 
@@ -32,10 +26,10 @@ class MagentoCategoryController extends Controller
             return $this->token;
         }
 
-        $response = $this->client->post("{$this->apiUrl}/rest/V1/integration/admin/token", [
+        $response = $this->client->post("{$this->syncService->apiUrl}/rest/V1/integration/admin/token", [
             'json' => [
-                'username' => $this->username,
-                'password' => $this->password,
+                'username' => $this->syncService->username,
+                'password' => $this->syncService->password,
             ],
         ]);
         $this->token = json_decode($response->getBody(), true);
@@ -46,8 +40,8 @@ class MagentoCategoryController extends Controller
     public function getCategory($id)
     {
 
-        $token = $this->getAccessToken();
-        $url="{$this->apiUrl}/rest/V1/categories/{$id}";
+        $token = $this->syncService->getAccessToken();
+        $url="{$this->syncService->apiUrl}/rest/V1/categories/{$id}";
 
         $response = $this->client->get($url, [
             'headers' => [
@@ -56,13 +50,13 @@ class MagentoCategoryController extends Controller
             ],
         ]);
 
-        return response()->json($response->json(), $response);
+        return response()->json(json_decode($response->getBody(), true), $response->getStatusCode());
     }
 
 
     public function createCategory(Request $request)
     {
-        $token = $this->getAccessToken();
+        $token = $this->syncService->getAccessToken();
 
         $storeCode = $request->input('store_code', 'default');
         $rootCategoryId = $this->getRootCategoryByStoreCode($storeCode);
@@ -71,36 +65,30 @@ class MagentoCategoryController extends Controller
             return response()->json(['error' => 'Invalid store code or root category not found'], 400);
         }
 
+        $name = $request->input('name');
+        if (!$name) {
+            return response()->json(['error' => 'The "name" field is required.'], 422);
+        }
+
+        $request->validate([
+            'store_code' => 'required|string',
+            'name' => 'required|string|max:255',
+        ]);
+
+
         $data = [
             'category' => [
-                'name' => $request->name,
-                'isActive' => $request->input('is_active', true),
-                'parentId' => $rootCategoryId,
-                'include_in_menu' => $request->input('include_in_menu', true),
-                'url_key' => $request->input('url_key', \Str::slug($request->name)),
-                'position' => $request->input('position', 0),
-                'meta_title' => $request->input('meta_title', $request->name),
-                'display_mode' => $request->input('display_mode', 'PRODUCTS_AND_PAGE'),
-                'is_anchor' => $request->input('is_anchor', 1),
-
-                'custom_attributes' => [
-                    [
-                        'attribute_code' => 'description',
-                        'value' => $request->input('description', ''),
-                    ],
-                    [
-                        'attribute_code' => 'meta_keywords',
-                        'value' => $request->input('meta_keywords', ''),
-                    ],
-                    [
-                        'attribute_code' => 'meta_description',
-                        'value' => $request->input('meta_description', ''),
-                    ]
-                ]
+                'name' => $request->input('name'),
+                'is_active' => true,
+                'parent_id' => $rootCategoryId,
+                'include_in_menu' => true,
             ]
         ];
 
-        $response = $this->client->post("{$this->apiUrl}/rest/V1/categories", [
+        \Log::info('data is'.json_encode($data, JSON_PRETTY_PRINT));
+
+
+        $response = $this->client->post("{$this->syncService->apiUrl}/rest/V1/categories", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
@@ -108,14 +96,15 @@ class MagentoCategoryController extends Controller
             'json' => $data,
         ]);
 
-        return response()->json($response->json(), $response->status());
+        return response()->json(json_decode($response->getBody(), true), $response->getStatusCode());
+
     }
 
 
 
     public function updateCategory(Request $request, $id)
     {
-        $token = $this->getAccessToken();
+        $token = $this->syncService->getAccessToken();
         $data = [
             'category' => [
                 'id' => $id,
@@ -125,7 +114,7 @@ class MagentoCategoryController extends Controller
             ]
         ];
 
-        $response = $this->client->put("{$this->apiUrl}/rest/V1/categories/{$id}", [
+        $response = $this->client->put("{$this->syncService->apiUrl}/rest/V1/categories/{$id}", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
@@ -134,7 +123,7 @@ class MagentoCategoryController extends Controller
         ]);
 
 
-        return response()->json($response->json(), $response->status());
+        return response()->json(json_decode($response->getBody(), true), $response->getStatusCode());
     }
 
 
@@ -146,9 +135,9 @@ class MagentoCategoryController extends Controller
 
 
         $storeList = [
-            'default' => 1,     // store_code => store_group_id
-            'fr_store' => 2,
-            'us_store' => 3
+            'admin' => 1,
+            'en_us' => 2,
+            'en' => 3
         ];
 
         $groupId = $storeList[$storeCode] ?? null;

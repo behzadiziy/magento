@@ -28,7 +28,8 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
 
     Route::post('stores', [StoresController::class, 'create']);
  //   Route::post('stores/sync', [MagentoSyncController::class, 'sync']);
-    Route::get('/magento/customers', [MagentoCustomerController::class, 'getCustomers']);
+    Route::get('customers/group/{storeGroupId}', [MagentoCustomerController::class, 'getCustomersByStoreGroup']);
+
 
     Route::prefix('categories')->group(function () {
         Route::get('{id}', [MagentoCategoryController::class, 'getCategory']);
