@@ -99,10 +99,10 @@ class MagentoSyncService
             throw $e;
         }
 
-     //   $uniqueSuffix = time() . '_' . rand(10, 20);
+        //   $uniqueSuffix = time() . '_' . rand(10, 20);
         $uniqueCode = strtolower(
-                preg_replace('/[^a-z0-9_]/', '_', $name)
-            ) . '_' . uniqid();
+            preg_replace('/[^a-z0-9_]/', '_', $name)
+        ) . '_' . uniqid();
         $storeGroupName = 'StoreGroup_' . $uniqueCode;
         $storeGroupCode = strtolower(str_replace(' ', '_', $storeGroupName));
 
