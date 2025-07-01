@@ -38,10 +38,8 @@ class StoresController extends Controller
 
 
 
-        // Create new store
         $data = new Stores();
 
-        // Fill in the store data
         $data->name = $validated['name'];
         $data->code= $this->generateCode($data->name);
         $data->owner_id = $validated['owner_id'];

@@ -115,7 +115,7 @@ class MagentoSyncService
 
         $storeViewCode = 'en_us_' . $uniqueCode;
         $storeViewName = 'English';
-        // Create store view
+
         $storeView = $this->createStoreView($websiteId, $storeGroupId, $storeViewCode, $storeViewName);
         Log::info('Store View created.', ['storeView' => $storeView]);
 
