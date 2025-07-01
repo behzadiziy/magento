@@ -64,7 +64,6 @@ final class MagentoService
                     'category_links' => $magentoCategoryId ? [['position' => 0, 'category_id' => (string)$magentoCategoryId]] : [],
                 ],
                 'custom_attributes' => $this->handleCustomAttributes($product, $attributeSetId),
-                'media_gallery_entries' => [],
             ],
         ];
 
@@ -206,7 +205,7 @@ final class MagentoService
             ]
         ];
 
-        Log::info("Image Payload Prepared", ['payload' => $mediaPayload]);
+        //Log::info("Image Payload Prepared", ['payload' => $mediaPayload]);
 
         try {
             $response = $this->makeApiRequest('post', $mediaEndpoint, $mediaPayload);
