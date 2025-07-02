@@ -24,7 +24,7 @@ Route::middleware('auth.apikey')->post('/v1/products/ingest', [ProductIngestionC
 
 Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
     Route::apiResource('products', AdminProductController::class)->only(['index', 'show', 'update']);
-    //Route::post('magento/sync', [MagentoSyncController::class, 'sync']);
+   Route::post('magento/sync', [MagentoSyncController::class, 'sync']);
 
     Route::post('products/{product}/sync', MagentoSyncController::class);
 
@@ -42,4 +42,5 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
 });
 Route::apiResource('tenant',TenantController::class);
 Route::post('tenant/login', [TenantAuthController::class, 'login']);
+Route::post('tenant/register', [TenantAuthController::class, 'register']);
 
