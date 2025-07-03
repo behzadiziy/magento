@@ -22,7 +22,6 @@ class StoresController extends Controller
 
     public function create(Request $request)
     {
-        // Update validation to match the new columns
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'owner_id' => 'required|integer|exists:users,id',

@@ -165,7 +165,7 @@ class MagentoSyncService
     }
 
 
-    public function createStoreView($websiteId, $groupId, $code, $name, $sortOrder = 0)
+    public function createStoreView($websiteId, $groupId, $code, $name, $sortOrder = 0, $storeId=null)
     {
         $token = $this->getAccessToken();
 
@@ -198,7 +198,17 @@ class MagentoSyncService
             }
 
             Log::info('Magento store view created successfully.', ['response' => $responseData]);
+
+            if (isset($responseData['code'])) {
+                \App\Models\Stores::where('id', $storeId)->update([
+                    'code' => $responseData['code']
+                ]);
+                Log::info("Store model updated with Magento store view code: {$responseData['code']}");
+            }
+
             return $responseData;
+
+
         } catch (ClientException $e) {
             $body = (string) $e->getResponse()->getBody();
             Log::error('Magento store view API returned client error.', ['body' => $body]);
