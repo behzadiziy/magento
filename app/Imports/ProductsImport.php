@@ -4,6 +4,8 @@ namespace App\Imports;
 
 use App\Models\Product;
 use App\Enums\ProductStatus;
+use App\Models\CategoryMapping;
+use App\Models\AttributeMapping;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -35,6 +37,41 @@ class ProductsImport implements ToModel, WithHeadingRow
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $attributesArray = [];
             }
+
+
+            // --- NEW LOGIC FOR IMAGES ---
+            $imagesString = $row['images'] ?? null;
+            $imagesArray = []; // Default to an empty array
+
+            if (!empty($imagesString)) {
+                // The string from the cell is already JSON. We just need to decode it.
+                // The `?? []` ensures that if decoding fails, we get an empty array.
+                $imagesArray = json_decode($imagesString, true) ?? [];
+            }
+            // --- END OF NEW LOGIC ---
+
+            // --- NEW: Handle Attribute Mapping ---
+            if (!empty($attributesArray)) {
+                foreach (array_keys($attributesArray) as $label) {
+                    $trimmedLabel = trim($label);
+                    if (!empty($trimmedLabel)) {
+                        AttributeMapping::firstOrCreate(
+                            ['source_label' => $trimmedLabel],
+                            ['is_mapped' => false]
+                        );
+                    }
+                }
+            }
+
+            // --- NEW: Handle Category Mapping ---
+            $categoryName = $row['category'] ?? null;
+            if (!empty($categoryName)) {
+                $trimmedCategory = trim($categoryName);
+                CategoryMapping::firstOrCreate(
+                    ['source_name' => $trimmedCategory],
+                    ['is_mapped' => false]
+                );
+            }
         }
 
         return Product::firstOrNew(['sku' => $row['sku']], [
@@ -47,6 +84,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             'brand'             => $row['brand'] ?? null,
             'source_url'        => $row['source_url'] ?? null,
             'attributes'        => $attributesArray,
+            'images'            => $imagesArray,
         ]);
     }
 }
