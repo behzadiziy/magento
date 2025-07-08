@@ -22,8 +22,32 @@ class EstimateShippingController extends Controller
         ]);
 
         $address = ShippingAddress::findOrFail($request->shipping_address_id);
+        \Log::info('Shipping address retrieved:', $address->toArray());
+
         $methods = $this->magento->getShippingMethods($cartId, $address);
+        \Log::info('Magento shipping methods response:', $methods);
+        \Log::debug('Cart ID:', ['cart_id' => $cartId]);
+        \Log::debug('Address:', $address->toArray());
 
         return response()->json($methods);
+    }
+
+    public function setShipping(Request $request, $cartId)
+    {
+        $request->validate([
+            'shipping_address_id' => 'required|exists:shipping_addresses,id',
+            'carrier_code' => 'required|string',
+            'method_code' => 'required|string',
+        ]);
+
+        $address = ShippingAddress::findOrFail($request->shipping_address_id);
+        $response = $this->magento->setShippingMethod(
+            $cartId,
+            $address,
+            $request->carrier_code,
+            $request->method_code
+        );
+
+        return response()->json($response);
     }
 }

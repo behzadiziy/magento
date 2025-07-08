@@ -35,7 +35,10 @@ class MagentoSyncService
                 'password' => $this->password,
             ],
         ]);
-        $this->token = json_decode($response->getBody(), true);
+
+        // Admin token is returned as a plain string — no JSON object
+        $this->token = json_decode((string) $response->getBody(), true);
+
         return $this->token;
     }
 

@@ -1,6 +1,7 @@
 <?php
 // routes/api.php
 
+use App\Http\Controllers\Api\V1\Tenant\EstimateShippingController;
 use App\Http\Controllers\Api\V1\Tenant\MagentoCustomerController;
 use App\Http\Controllers\Api\V1\StoresController;
 
@@ -44,6 +45,13 @@ Route::middleware('auth:sanctum')->prefix('v1/admin/tenant')->group(function () 
     });
 
     Route::post('/store_address', [StoreAddressController::class, 'store']);
+
+    Route::prefix('cart/{cartId}')->group(function () {
+        Route::post('estimate-shipping', [EstimateShippingController::class, 'estimate']);
+        Route::post('set-shipping', [EstimateShippingController::class, 'setShipping']);
+    });
+
+
 });
 Route::apiResource('tenant',TenantController::class);
 Route::post('tenant/login', [TenantAuthController::class, 'login']);
