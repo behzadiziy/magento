@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\V1\Tenant\OrderController;
 use App\Http\Controllers\Api\V1\Tenant\ProductController;
 use App\Http\Controllers\Api\V1\MagentoCustomerController;
 use App\Http\Controllers\Api\V1\ProductIngestionController;
+use App\Http\Controllers\Api\V1\Tenant\CmsBlockController;
+use App\Http\Controllers\Api\V1\Tenant\UserAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,4 +35,7 @@ Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
 
     Route::apiResource('tenant/products', ProductController::class);
     Route::apiResource('tenant/orders', OrderController::class);
+    Route::apiResource('tenant/cmsBlocks', CmsBlockController::class);
+    Route::apiResource('tenant/userAdmin', UserAdminController::class);
+
 });
