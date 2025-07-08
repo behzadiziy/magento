@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\ProductResource\Pages;
 
-use App\Enums\ProductStatus;
 use Filament\Actions;
 use App\Models\Product;
+use App\Enums\ProductStatus;
 use Filament\Resources\Components\Tab;
+use App\Filament\Imports\ProductImporter;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource;
 
@@ -18,6 +20,9 @@ class ListProducts extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+
+            Actions\ImportAction::make()
+                ->importer(ProductImporter::class),
         ];
     }
 

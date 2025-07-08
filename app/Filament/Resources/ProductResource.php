@@ -11,6 +11,7 @@ use App\Enums\ProductStatus;
 use Filament\Actions\Action;
 use App\Services\MagentoService;
 use Filament\Resources\Resource;
+use Filament\Actions\ImportAction;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -19,16 +20,23 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use App\Filament\Imports\ProductImporter;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
+
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
 
+use HayderHatem\FilamentExcelImport\Actions\Concerns\CanImportExcelRecords;
+
+use Filament\Actions;
+
 class ProductResource extends Resource
 {
+    use CanImportExcelRecords;
     protected static ?string $model = Product::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -237,6 +245,8 @@ class ProductResource extends Resource
             //
         ];
     }
+
+
 
     public static function getPages(): array
     {
